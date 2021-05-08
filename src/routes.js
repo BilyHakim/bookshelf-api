@@ -1,9 +1,11 @@
-const routes = [
-    {
-        method: 'POST',
-        path: '/books',
-        handler: () => {},
-    },
-];
+const { addBookHandler } = require('./handler')
 
-module.exports = routes;
+const routes = [
+  {
+    method: 'POST',
+    path: '/books',
+    handler: addBookHandler
+  }
+]
+
+module.exports = routes
