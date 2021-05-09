@@ -48,6 +48,41 @@ const addBookHandler = (request, h) => {
   return response
 }
 
+// kalau salah, data: booksnya diganti bookself
+const getAllBooksHandler = () => ({
+  status: 'success',
+  data: {
+    bookself: bookself.map((book) => ({
+      id: book.id,
+      name: book.name,
+      publisher: book.publisher
+    }))
+  }
+})
+
+const getBookByIdHandler = (request, h) => {
+  const { id } = request.params
+
+  const book = bookself.filter((n) => n.id === id)[0]
+
+  if (book !== undefined) {
+    return {
+      status: 'success',
+      data: {
+        book
+      }
+    }
+  }
+  const response = h.response({
+    status: 'fail',
+    message: 'Buku tidak ditemukan'
+  })
+  response.code(404)
+  return response
+}
+
 module.exports = {
-  addBookHandler
+  addBookHandler,
+  getAllBooksHandler,
+  getBookByIdHandler
 }
