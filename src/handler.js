@@ -1,6 +1,7 @@
 const { nanoid } = require('nanoid')
-const bookself = require('./bookself')
+const books = require('./books')
 
+// Kriteria Pertama
 const addBookHandler = (request, h) => {
   const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload
 
@@ -10,6 +11,7 @@ const addBookHandler = (request, h) => {
   const updatedAt = insertedAt
 
   const newBook = {
+    id,
     name,
     year,
     author,
@@ -18,15 +20,34 @@ const addBookHandler = (request, h) => {
     pageCount,
     readPage,
     reading,
-    id,
     finished,
     insertedAt,
     updatedAt
   }
 
-  bookself.push(newBook)
+  if (name === undefined) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal menambahkan buku. Mohon isi nama buku'
+    })
 
-  const isSuccess = bookself.filter((book) => book.id === id).length > 0
+    response.code(400)
+    return response
+  }
+
+  if (readPage > pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount'
+    })
+
+    response.code(400)
+    return response
+  }
+
+  books.push(newBook)
+
+  const isSuccess = books.filter((book) => book.id === id).length > 0
 
   if (isSuccess) {
     const response = h.response({
@@ -48,11 +69,11 @@ const addBookHandler = (request, h) => {
   return response
 }
 
-// kalau salah, data: booksnya diganti bookself
+// Kriteria kedua
 const getAllBooksHandler = () => ({
   status: 'success',
   data: {
-    bookself: bookself.map((book) => ({
+    books: books.map((book) => ({
       id: book.id,
       name: book.name,
       publisher: book.publisher
@@ -61,11 +82,11 @@ const getAllBooksHandler = () => ({
 })
 
 const getBookByIdHandler = (request, h) => {
-  const { id } = request.params
+  const { bookId } = request.params
 
-  const book = bookself.filter((n) => n.id === id)[0]
+  const book = books.filter((b) => b.id === bookId)[0]
 
-  if (book !== undefined) {
+  if (book) {
     return {
       status: 'success',
       data: {
@@ -81,8 +102,96 @@ const getBookByIdHandler = (request, h) => {
   return response
 }
 
+// Kriteria ketiga
+const editBookByIdHandler = (request, h) => {
+  const { bookId } = request.params
+
+  const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload
+  const insertedAt = new Date().toISOString()
+  const updatedAt = insertedAt
+  const finished = pageCount === readPage
+
+  if (name === undefined) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Mohon isi nama buku'
+    })
+
+    response.code(400)
+    return response
+  }
+
+  if (readPage > pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount'
+    })
+
+    response.code(400)
+    return response
+  }
+  const index = books.findIndex((book) => book.id === bookId)
+
+  if (index !== -1) {
+    books[index] = {
+      ...books[index],
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
+      finished,
+      reading,
+      insertedAt,
+      updatedAt
+    }
+    const response = h.response({
+      status: 'success',
+      message: 'Buku berhasil diperbarui'
+    })
+
+    response.code(200)
+    return response
+  }
+
+  const response = h.response({
+    status: 'fail',
+    message: 'Gagal memperbarui buku. Id tidak ditemukan'
+  })
+
+  response.code(404)
+  return response
+}
+
+// Kriteria 4
+const deleteBookByIdHandler = (request, h) => {
+  const { bookId } = request.params
+  const index = books.findIndex((book) => book.id === bookId)
+
+  if (index !== -1) {
+    books.splice(index, 1)
+    const response = h.response({
+      status: 'success',
+      message: 'Buku berhasil dihapus'
+    })
+    response.code(200)
+    return response
+  }
+
+  const response = h.response({
+    status: 'fail',
+    message: 'Buku gagal dihapus. Id tidak ditemukan'
+  })
+  response.code(404)
+  return response
+}
+
 module.exports = {
   addBookHandler,
   getAllBooksHandler,
-  getBookByIdHandler
+  getBookByIdHandler,
+  editBookByIdHandler,
+  deleteBookByIdHandler
 }
