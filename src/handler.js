@@ -81,6 +81,7 @@ const getAllBooksHandler = () => ({
   }
 })
 
+// Kriteria ketiga
 const getBookByIdHandler = (request, h) => {
   const { bookId } = request.params
 
@@ -102,14 +103,14 @@ const getBookByIdHandler = (request, h) => {
   return response
 }
 
-// Kriteria ketiga
+// Kriteria keempat
 const editBookByIdHandler = (request, h) => {
   const { bookId } = request.params
 
   const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload
+  const finished = (pageCount === readPage)
   const insertedAt = new Date().toISOString()
   const updatedAt = insertedAt
-  const finished = pageCount === readPage
 
   if (name === undefined) {
     const response = h.response({
@@ -165,7 +166,7 @@ const editBookByIdHandler = (request, h) => {
   return response
 }
 
-// Kriteria 4
+// Kriteria kelima
 const deleteBookByIdHandler = (request, h) => {
   const { bookId } = request.params
   const index = books.findIndex((book) => book.id === bookId)
